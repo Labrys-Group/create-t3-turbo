@@ -16,7 +16,8 @@
       "Bash(else)",
       "Bash(fi)",
       "Bash(gh pr edit:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(pnpm test:*)"
     ],
     "deny": [],
     "ask": []
