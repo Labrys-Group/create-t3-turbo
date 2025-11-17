@@ -92,7 +92,7 @@ git diff <base-branch>...HEAD --stat
 
 **In both cases:**
 - Analyze the full diff, not just commit messages
-- Be thorough but concise
+- Be thorough but concise. Ensure you don't bloat the description, your audience is other developers be brief, _accurate_ and to the point.
 - Use proper markdown formatting
 - Include checkboxes for testing items
 - **If a Jira ticket ID was found in step 2:**
