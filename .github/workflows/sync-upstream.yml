@@ -92,6 +92,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'pnpm'
 
       - name: Setup pnpm
         if: steps.check.outputs.already_synced == 'false' && steps.analyze.outputs.only_lockfile == 'true'
@@ -109,7 +110,12 @@ jobs:
           git checkout --theirs pnpm-lock.yaml
 
           # Update lockfile based on merged package.json
-          pnpm install
+          if ! pnpm install; then
+            echo "pnpm install failed - aborting merge"
+            echo "resolution_status=failed" >> $GITHUB_OUTPUT
+            git merge --abort
+            exit 1
+          fi
 
           # Stage the updated lockfile
           git add pnpm-lock.yaml
