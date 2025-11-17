@@ -87,6 +87,42 @@ jobs:
             git merge --abort
           fi
 
+      - name: Setup Node.js
+        if: steps.check.outputs.already_synced == 'false' && steps.analyze.outputs.only_lockfile == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        if: steps.check.outputs.already_synced == 'false' && steps.analyze.outputs.only_lockfile == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.19.0
+
+      - name: Auto-resolve lockfile conflict
+        if: steps.check.outputs.already_synced == 'false' && steps.analyze.outputs.only_lockfile == 'true'
+        id: auto_resolve
+        run: |
+          echo "Auto-resolving pnpm-lock.yaml conflict..."
+
+          # Accept upstream's lockfile (preserves their dependency resolutions)
+          git checkout --theirs pnpm-lock.yaml
+
+          # Update lockfile based on merged package.json
+          pnpm install
+
+          # Stage the updated lockfile
+          git add pnpm-lock.yaml
+
+          # Complete the merge commit
+          git commit --no-edit
+
+          # Push the branch
+          git push origin ${{ env.branch_name }}
+
+          echo "resolution_status=success" >> $GITHUB_OUTPUT
+          echo "Lockfile conflict auto-resolved successfully"
+
       - name: Create Pull Request
         if: steps.check.outputs.already_synced == 'false' && steps.merge.outputs.merge_status == 'success'
         uses: actions/github-script@v7
