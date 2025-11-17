@@ -41,7 +41,7 @@ jobs:
 
             # Get the list of new commits from upstream
             MERGE_BASE=$(git merge-base HEAD upstream/main)
-            COMMITS=$(git log --pretty=format:"- %s ([%h](https://github.com/t3-oss/create-t3-turbo/commit/%H)) by @%an" $MERGE_BASE..upstream/main)
+            COMMITS=$(git log --pretty=format:"- %s ([%h](https://github.com/t3-oss/create-t3-turbo/commit/%H)) by %an" $MERGE_BASE..upstream/main)
 
             # Store commits in output (handle multiline)
             echo "new_commits<<EOF" >> $GITHUB_OUTPUT
