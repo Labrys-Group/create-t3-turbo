@@ -17,7 +17,24 @@ git remote show origin | grep 'HEAD branch' | cut -d' ' -f5
 git status
 ```
 
-## 2. Find the Base Branch
+## 2. Extract Jira Ticket ID (if present)
+
+Check if the branch name contains a Jira ticket ID in the expected format (e.g., ABC-123, PROJ-456):
+
+```bash
+# Extract Jira ticket ID from branch name
+# Pattern: PROJECT-NUMBER where PROJECT is uppercase letters and NUMBER is digits
+branch_name=$(git rev-parse --abbrev-ref HEAD)
+if [[ $branch_name =~ ([A-Z]+-[0-9]+) ]]; then
+  echo "Jira ticket: ${BASH_REMATCH[1]}"
+else
+  echo "No Jira ticket ID found in branch name"
+fi
+```
+
+Store the ticket ID if found - it will be used in the PR description generation step.
+
+## 3. Find the Base Branch
 
 Determine which branch this was forked from. First, try to find the tracking branch:
 
@@ -28,7 +45,7 @@ git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || echo "No ups
 
 If there's no upstream, assume the base branch is the default branch (main/master).
 
-## 3. Check for PR Template
+## 4. Check for PR Template
 
 Check for the repository's PR template:
 
@@ -47,7 +64,7 @@ else
 fi
 ```
 
-## 4. Analyze the Changes
+## 5. Analyze the Changes
 
 Get comprehensive information about all changes since the branch point:
 
@@ -62,9 +79,9 @@ git diff <base-branch>...HEAD
 git diff <base-branch>...HEAD --stat
 ```
 
-## 5. Generate PR Description
+## 6. Generate PR Description
 
-**If a PR template was found in step 3:**
+**If a PR template was found in step 4:**
 - Use the template structure as the base
 - Fill in each section of the template with relevant information from the commits and diff
 - Replace HTML comments with actual content
@@ -78,9 +95,10 @@ git diff <base-branch>...HEAD --stat
 - Be thorough but concise
 - Use proper markdown formatting
 - Include checkboxes for testing items
-- Add the Claude Code footer: `---\n🤖 Generated with [Claude Code](https://claude.com/claude-code)`
+- **If a Jira ticket ID was found in step 2:**
+  - Add a "Jira Ticket" section at the top with a link in the format: `**Jira Ticket:** [TICKET-ID](https://labrys.atlassian.net/browse/TICKET-ID)`
 
-## 6. Check for Existing PR
+## 7. Check for Existing PR
 
 Check if a PR already exists for this branch:
 
@@ -88,7 +106,7 @@ Check if a PR already exists for this branch:
 gh pr view --json number,title,body 2>&1
 ```
 
-## 7. Create or Update PR
+## 8. Create or Update PR
 
 **If PR exists:**
 - Update the PR description with the generated content using:
@@ -102,7 +120,7 @@ EOF
 
 **If no PR exists:**
 - Ask the user if they want to create a PR now
-- If yes, ask what base branch to target (default to the branch found in step 2)
+- If yes, ask what base branch to target (default to the branch found in step 3)
 - Create the PR with:
 ```bash
 gh pr create --base <base-branch> --title "[generated title]" --body "$(cat <<'EOF'

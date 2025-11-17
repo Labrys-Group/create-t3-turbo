@@ -7,7 +7,7 @@ Generate a comprehensive pull request description based on the diff between the 
 ## Shared Command Reference
 
 <!-- This command uses a shared prompt definition -->
-<!-- Source: .docs/custom-commands/pr.md -->
+<!-- Source: docs/custom-commands/pr.md -->
 
-@.docs/custom-commands/pr.md
+@docs/custom-commands/pr.md
 
