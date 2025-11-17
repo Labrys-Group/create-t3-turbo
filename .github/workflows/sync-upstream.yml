@@ -15,6 +15,9 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -172,10 +175,12 @@ jobs:
               prBody += '## ⚠️ Auto-Resolution Notice\n\nThe pnpm-lock.yaml file had merge conflicts and was automatically resolved by accepting upstream\'s lockfile and running `pnpm install`.\nPlease verify the lockfile changes are correct before merging.\n\n';
             }
 
+            prBody += '## Auto-Merge Enabled ✨\n\n';
+            prBody += 'This PR has **auto-merge** enabled and will be automatically merged once all required CI checks pass.\n\n';
             prBody += '## Review Notes\n';
-            prBody += '- Please review the changes carefully before merging\n';
-            prBody += '- Check for any conflicts with custom modifications in this fork\n';
-            prBody += '- Ensure CI passes before merging\n\n';
+            prBody += '- Auto-merge will wait for all required status checks to complete\n';
+            prBody += '- If you need to review changes manually, you can disable auto-merge on this PR\n';
+            prBody += '- Check for any conflicts with custom modifications in this fork\n\n';
             prBody += '---\n';
             prBody += '🤖 This PR was automatically created by the sync-upstream workflow.';
 
@@ -190,6 +195,48 @@ jobs:
               });
 
               console.log(`Pull request created: ${pr.html_url}`);
+
+              // Enable auto-merge for the PR
+              try {
+                await github.rest.pulls.updateBranch({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number,
+                });
+                console.log('Updated branch with base branch');
+              } catch (updateError) {
+                console.log('Branch update not needed or failed:', updateError.message);
+              }
+
+              // Enable auto-merge using GraphQL API
+              try {
+                const prNodeId = pr.node_id;
+                const mutation = `
+                  mutation EnableAutoMerge($pullRequestId: ID!) {
+                    enablePullRequestAutoMerge(input: {
+                      pullRequestId: $pullRequestId,
+                      mergeMethod: MERGE
+                    }) {
+                      pullRequest {
+                        autoMergeRequest {
+                          enabledAt
+                        }
+                      }
+                    }
+                  }
+                `;
+
+                await github.graphql(mutation, {
+                  pullRequestId: prNodeId,
+                });
+
+                console.log(`Auto-merge enabled for PR #${pr.number}`);
+                console.log('The PR will be automatically merged once all required checks pass');
+              } catch (autoMergeError) {
+                console.error('Failed to enable auto-merge:', autoMergeError.message);
+                console.log('The PR was created but auto-merge could not be enabled.');
+                console.log('You may need to enable it manually or check repository settings.');
+              }
             } catch (error) {
               if (error.status === 422) {
                 console.log('Pull request already exists or no changes to sync');

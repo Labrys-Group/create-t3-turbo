@@ -29,7 +29,8 @@ This repository includes an automated workflow to sync with the upstream [t3-oss
 When triggered, the workflow will:
 - Check for new changes from the upstream repository
 - Create a pull request with the changes if any are found
-- Allow you to review and merge the updates at your convenience
+- **Automatically enable auto-merge** on the PR to merge it once CI checks pass
+- The PR will be merged automatically without requiring manual review, streamlining the update process
 
 ## About
 
