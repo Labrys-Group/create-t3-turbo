@@ -106,6 +106,7 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 10.19.0
+          run_install: false
 
       - name: Auto-resolve lockfile conflict
         if: steps.check.outputs.already_synced == 'false' && steps.analyze.outputs.only_lockfile == 'true'
