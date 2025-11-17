@@ -85,7 +85,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const branchName = process.env.branch_name;
-            const newCommits = `${{ steps.check.outputs.new_commits }}`;
+            const newCommits = fromJSON(process.env['new_commits']);
 
             // Build the PR body with new commits
             let prBody = 'This PR syncs changes from the upstream repository [t3-oss/create-t3-turbo](https://github.com/t3-oss/create-t3-turbo).\n\n';
