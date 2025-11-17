@@ -52,12 +52,18 @@ echo "EOF" >> $GITHUB_OUTPUT
 - Runs when: `only_lockfile == 'true'`
 - Location: After conflict analysis step
 - Actions:
-  1. Remove conflicted lockfile: `rm pnpm-lock.yaml`
-  2. Regenerate: `pnpm install`
+  1. Accept upstream's lockfile: `git checkout --theirs pnpm-lock.yaml`
+  2. Update based on merged package.json: `pnpm install`
   3. Stage: `git add pnpm-lock.yaml`
   4. Complete merge: `git commit --no-edit`
   5. Push: `git push origin $BRANCH_NAME`
 - Output: `resolution_status=success`
+
+**Rationale:**
+- Using `git checkout --theirs` preserves upstream's dependency resolutions
+- `pnpm install` only updates what's necessary based on the merged package.json
+- This minimizes divergence from upstream compared to full regeneration
+- Since only pnpm-lock.yaml conflicts, package.json merged cleanly (no dependency conflicts)
 
 **Error handling:**
 - pnpm install failure → workflow fails (GitHub marks as failed)
@@ -76,7 +82,7 @@ echo "EOF" >> $GITHUB_OUTPUT
   ```markdown
   ## ⚠️ Auto-Resolution Notice
 
-  The pnpm-lock.yaml file had merge conflicts and was automatically regenerated.
+  The pnpm-lock.yaml file had merge conflicts and was automatically resolved by accepting upstream's lockfile and running `pnpm install`.
   Please verify the lockfile changes are correct before merging.
   ```
 
@@ -106,7 +112,7 @@ Only pnpm-lock.yaml? → No → Create issue (manual resolution)
    Yes
     ↓
 Auto-resolve:
-- rm pnpm-lock.yaml
+- git checkout --theirs pnpm-lock.yaml
 - pnpm install
 - git add & commit
 - git push
@@ -164,3 +170,12 @@ Create PR with auto-resolution notice
 - Support additional lockfile types (package-lock.json, yarn.lock, Cargo.lock)
 - Add Slack/Discord notification for auto-resolutions
 - Metrics tracking for auto-fix success rate
+
+## Implementation
+
+**Implemented:** 2025-11-17
+**Branch:** feature/auto-resolve-lockfile-conflicts
+**Status:** Complete
+
+All workflow changes have been implemented using the `git checkout --theirs` approach
+to preserve upstream's dependency resolutions while updating based on merged package.json.
