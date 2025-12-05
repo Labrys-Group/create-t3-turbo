@@ -19,7 +19,16 @@ rm LICENSE
 rm README.md
 rm LABRYS-README.md
 mv PROJECT-README.md README.md
-rm scripts/init-project.sh # What a selfless hero!
+
+# Husky and conventional commits
+echo "Setting up Husky..."
+pnpm add -D -w husky @commitlint/cli @commitlint/config-conventional
+pnpm exec husky init
+echo "pnpm exec commitlint --edit \$1" > .husky/commit-msg
+chmod +x .husky/commit-msg
+echo "DONE."
+
+# rm scripts/init-project.sh # What a selfless hero!
 
 git add --all
 git commit -m "chore: ./scripts/init-project.sh"
