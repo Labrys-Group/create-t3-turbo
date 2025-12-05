@@ -265,13 +265,39 @@ jobs:
                 console.log('Branch update not needed or failed:', updateError.message);
               }
 
+              // Wait for status checks to be queued before enabling auto-merge
+              // GitHub needs a moment to trigger CI checks after PR creation
+              console.log('Waiting for status checks to be queued...');
+              let prReady = false;
+              let attempts = 0;
+              const maxAttempts = 10;
+
+              while (!prReady && attempts < maxAttempts) {
+                attempts++;
+                await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
+
+                const { data: prData } = await github.rest.pulls.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number,
+                });
+
+                // Check if PR has status checks or is mergeable
+                if (prData.mergeable_state !== 'unknown') {
+                  prReady = true;
+                  console.log(`PR is ready (mergeable_state: ${prData.mergeable_state})`);
+                } else {
+                  console.log(`Attempt ${attempts}/${maxAttempts}: PR still initializing...`);
+                }
+              }
+
               // Enable auto-merge using GraphQL API
               try {
                 const prNodeId = pr.node_id;
-                
+
                 // Check if we're using SYNC_TOKEN (admin token that can bypass protections)
                 const hasAdminToken = '${{ secrets.SYNC_TOKEN }}' !== '';
-                
+
                 const mutation = `
                   mutation EnableAutoMerge($pullRequestId: ID!) {
                     enablePullRequestAutoMerge(input: {
@@ -292,7 +318,7 @@ jobs:
                 });
 
                 console.log(`Auto-merge enabled for PR #${pr.number}`);
-                
+
                 if (hasAdminToken) {
                   console.log('✓ Using SYNC_TOKEN with admin privileges - will bypass review requirements');
                   console.log('✓ The PR will be automatically merged once CI checks pass');
