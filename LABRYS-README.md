@@ -17,7 +17,7 @@ git config --global pull.rebase
 git config --global branch.autoSetupRebase always
 
 nvm install
-npm install --global pnpm
+corepack enable pnpm
 pnpm install
 pnpm format:fix # Prettier
 pnpm lint:fix
@@ -34,4 +34,7 @@ Complete at least one task from the [project](https://github.com/Labrys-Group/cr
 ```sh
 # In your project folder
 npx create-turbo@latest -e https://github.com/Labrys-Group/create-t3-turbo
+# Select pnpm
+cd $your_project
+./scripts/init-project.sh
 ```
