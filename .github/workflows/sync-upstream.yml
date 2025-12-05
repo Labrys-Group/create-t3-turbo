@@ -171,21 +171,33 @@ jobs:
       - name: Run CI - Lint
         if: steps.check.outputs.already_synced == 'false' && (steps.merge.outputs.merge_status == 'success' || (steps.analyze.outputs.only_lockfile == 'true' && steps.auto_resolve.outputs.resolution_status == 'success'))
         id: lint
+        env:
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
         run: pnpm lint && pnpm lint:ws
 
       - name: Run CI - Format
         if: steps.check.outputs.already_synced == 'false' && (steps.merge.outputs.merge_status == 'success' || (steps.analyze.outputs.only_lockfile == 'true' && steps.auto_resolve.outputs.resolution_status == 'success'))
         id: format
+        env:
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
         run: pnpm format
 
       - name: Run CI - Typecheck
         if: steps.check.outputs.already_synced == 'false' && (steps.merge.outputs.merge_status == 'success' || (steps.analyze.outputs.only_lockfile == 'true' && steps.auto_resolve.outputs.resolution_status == 'success'))
         id: typecheck
+        env:
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
         run: pnpm typecheck
 
       - name: Run CI - Test
         if: steps.check.outputs.already_synced == 'false' && (steps.merge.outputs.merge_status == 'success' || (steps.analyze.outputs.only_lockfile == 'true' && steps.auto_resolve.outputs.resolution_status == 'success'))
         id: test
+        env:
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
         run: pnpm test
 
       - name: Push to main
