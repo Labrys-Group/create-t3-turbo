@@ -37,6 +37,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
+          ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0 # Fetch all history for all branches and tags
 
