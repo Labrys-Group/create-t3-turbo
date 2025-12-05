@@ -18,6 +18,9 @@ on:
   # https://github.com/Labrys-Group/create-t3-turbo/actions/workflows/sync-upstream.yml
   # Click "Run workflow"
   workflow_dispatch: # Allow manual triggering
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
 
 # You can leverage Vercel Remote Caching with Turbo to speed up your builds
 env:
@@ -43,17 +46,51 @@ jobs:
           token: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
           fetch-depth: 0 # Fetch all history for all branches and tags
 
+      - name: Check for open sync issues
+        id: check_issues
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'upstream-sync'
+            });
+
+            if (issues.length > 0) {
+              console.log(`Found ${issues.length} open upstream-sync issue(s):`);
+              issues.forEach(issue => {
+                console.log(`- #${issue.number}: ${issue.title}`);
+              });
+              core.setOutput('has_open_issues', 'true');
+            } else {
+              console.log('No open upstream-sync issues found');
+              core.setOutput('has_open_issues', 'false');
+            }
+
+      - name: Exit if open sync issues exist
+        if: steps.check_issues.outputs.has_open_issues == 'true'
+        run: |
+          echo "⚠️ Skipping sync - open upstream-sync issues exist"
+          echo "Please resolve the existing issues before running sync again"
+          exit 0
+
       - name: Configure Git
+        if: steps.check_issues.outputs.has_open_issues == 'false'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Add upstream remote
+        if: steps.check_issues.outputs.has_open_issues == 'false'
         run: |
           git remote add upstream https://github.com/t3-oss/create-t3-turbo.git || true
           git fetch upstream
 
       - name: Check for upstream changes
+        if: steps.check_issues.outputs.has_open_issues == 'false'
         id: check
         run: |
           # Get the latest commit from upstream main
