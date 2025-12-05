@@ -1,6 +1,6 @@
 # create-t3-turbo
 
-**See [LABRYS_README.md](./LABRYS_README.md) first.**
+**See [LABRYS-README.md](./LABRYS-README.md) first.**
 
 ---
 
@@ -31,6 +31,7 @@ This repository includes an automated workflow to sync with the upstream [t3-oss
 **[📥 Trigger Sync Upstream Workflow](https://github.com/Labrys-Group/create-t3-turbo/actions/workflows/sync-upstream.yml)**
 
 When triggered, the workflow will:
+
 - Check for new changes from the upstream repository
 - Create a pull request with the changes if any are found
 - Allow you to review and merge the updates at your convenience
