@@ -199,31 +199,32 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const newCommits = `${{ steps.check.outputs.new_commits }}`;
+            const newCommits = '${{ steps.check.outputs.new_commits }}';
+            const lintOutcome = '${{ steps.lint.outcome }}' || 'N/A';
+            const formatOutcome = '${{ steps.format.outcome }}' || 'N/A';
+            const typecheckOutcome = '${{ steps.typecheck.outcome }}' || 'N/A';
+            const testOutcome = '${{ steps.test.outcome }}' || 'N/A';
+            const repository = '${{ github.repository }}';
+            const runId = '${{ github.run_id }}';
+            const actor = '${{ github.actor }}';
 
-            const body = `## ❌ Upstream Sync Failed - CI Checks Failed
-
-Attempted to sync changes from upstream but CI checks failed.
-
-### New Commits from Upstream
-${newCommits}
-
-### What Happened
-The merge was successful but one or more CI checks failed:
-- Lint: ${{ steps.lint.outcome || 'N/A' }}
-- Format: ${{ steps.format.outcome || 'N/A' }}
-- Typecheck: ${{ steps.typecheck.outcome || 'N/A' }}
-- Test: ${{ steps.test.outcome || 'N/A' }}
-
-### What to Do
-1. Check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details
-2. Fix the failing checks locally
-3. Push your fixes to main
-4. Close this issue once resolved
-
-### Workflow
-- Triggered by: @${{ github.actor }}
-- Workflow run: ${{ github.run_id }}`;
+            const body = '## ❌ Upstream Sync Failed - CI Checks Failed\n\n' +
+              'Attempted to sync changes from upstream but CI checks failed.\n\n' +
+              '### New Commits from Upstream\n' + newCommits + '\n\n' +
+              '### What Happened\n' +
+              'The merge was successful but one or more CI checks failed:\n' +
+              '- Lint: ' + lintOutcome + '\n' +
+              '- Format: ' + formatOutcome + '\n' +
+              '- Typecheck: ' + typecheckOutcome + '\n' +
+              '- Test: ' + testOutcome + '\n\n' +
+              '### What to Do\n' +
+              '1. Check the [workflow run](https://github.com/' + repository + '/actions/runs/' + runId + ') for details\n' +
+              '2. Fix the failing checks locally\n' +
+              '3. Push your fixes to main\n' +
+              '4. Close this issue once resolved\n\n' +
+              '### Workflow\n' +
+              '- Triggered by: @' + actor + '\n' +
+              '- Workflow run: ' + runId;
 
             await github.rest.issues.create({
               owner: context.repo.owner,
@@ -239,35 +240,28 @@ The merge was successful but one or more CI checks failed:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const conflictedFiles = `${{ steps.analyze.outputs.conflicted_files }}`;
-            const newCommits = `${{ steps.check.outputs.new_commits }}`;
+            const conflictedFiles = '${{ steps.analyze.outputs.conflicted_files }}';
+            const newCommits = '${{ steps.check.outputs.new_commits }}';
+            const actor = '${{ github.actor }}';
+            const runId = '${{ github.run_id }}';
 
-            const body = `## ⚠️ Upstream Sync Failed - Manual Resolution Required
-
-Attempted to sync changes from upstream [t3-oss/create-t3-turbo](https://github.com/t3-oss/create-t3-turbo) but encountered merge conflicts that require manual resolution.
-
-### Conflicted Files
-\`\`\`
-${conflictedFiles}
-\`\`\`
-
-### New Commits from Upstream
-${newCommits}
-
-### What to Do
-1. Manually merge the upstream changes:
-   \`\`\`bash
-   git fetch upstream
-   git merge upstream/main
-   \`\`\`
-2. Resolve the conflicts in the files listed above
-3. Test the changes locally
-4. Commit and push to main
-5. Close this issue
-
-### Workflow
-- Triggered by: @${{ github.actor }}
-- Workflow run: ${{ github.run_id }}`;
+            const body = '## ⚠️ Upstream Sync Failed - Manual Resolution Required\n\n' +
+              'Attempted to sync changes from upstream [t3-oss/create-t3-turbo](https://github.com/t3-oss/create-t3-turbo) but encountered merge conflicts that require manual resolution.\n\n' +
+              '### Conflicted Files\n```\n' + conflictedFiles + '\n```\n\n' +
+              '### New Commits from Upstream\n' + newCommits + '\n\n' +
+              '### What to Do\n' +
+              '1. Manually merge the upstream changes:\n' +
+              '   ```bash\n' +
+              '   git fetch upstream\n' +
+              '   git merge upstream/main\n' +
+              '   ```\n' +
+              '2. Resolve the conflicts in the files listed above\n' +
+              '3. Test the changes locally\n' +
+              '4. Commit and push to main\n' +
+              '5. Close this issue\n\n' +
+              '### Workflow\n' +
+              '- Triggered by: @' + actor + '\n' +
+              '- Workflow run: ' + runId;
 
             await github.rest.issues.create({
               owner: context.repo.owner,
@@ -278,3 +272,4 @@ ${newCommits}
             });
 
             console.log('Issue created for merge conflicts');
+
