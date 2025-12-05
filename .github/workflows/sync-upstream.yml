@@ -1,27 +1,29 @@
 name: Sync Upstream
 
 # This workflow syncs changes from t3-oss/create-t3-turbo upstream repository.
+# It merges changes directly to main after running CI checks.
+#
 # When merge conflicts occur:
 # - If ONLY pnpm-lock.yaml conflicts: automatically resolve by accepting upstream's
-#   lockfile and running 'pnpm install', then create PR with notice
+#   lockfile and running 'pnpm install', then push to main
 # - If other files conflict: abort merge and create issue for manual resolution
 #
-# Auto-merge is enabled on created PRs to automatically merge them once CI checks pass.
-# This workflow uses a SYNC_TOKEN (Personal Access Token) to create PRs, and GITHUB_TOKEN
-# (github-actions[bot]) to auto-approve them - satisfying the required reviews rule.
-#
-# Setup required:
-# 1. Create a Personal Access Token (classic) with 'repo' scope
-# 2. Add the PAT as a repository secret named 'SYNC_TOKEN'
-# 3. The workflow will:
-#    - Create PR using SYNC_TOKEN (your user identity)
-#    - Auto-approve using GITHUB_TOKEN (github-actions[bot] - different identity)
-#    - Enable auto-merge to merge once CI passes
+# The workflow will:
+# 1. Fetch and merge upstream changes
+# 2. Run all CI checks (lint, format, typecheck, test)
+# 3. Push to main if all checks pass
+# 4. Create an issue if checks fail
 
 on:
   # https://github.com/Labrys-Group/create-t3-turbo/actions/workflows/sync-upstream.yml
   # Click "Run workflow"
   workflow_dispatch: # Allow manual triggering
+
+# You can leverage Vercel Remote Caching with Turbo to speed up your builds
+env:
+  FORCE_COLOR: 3
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
 jobs:
   sync:
@@ -30,14 +32,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
+      issues: write
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          # Use SYNC_TOKEN if available (PAT with admin rights to bypass protections)
-          # Otherwise fall back to GITHUB_TOKEN (respects branch protections)
-          token: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0 # Fetch all history for all branches and tags
 
       - name: Configure Git
@@ -65,29 +65,24 @@ jobs:
 
             # Get the list of new commits from upstream
             MERGE_BASE=$(git merge-base HEAD upstream/main)
-            COMMITS=$(git log --pretty=format:"- %s ([%h](https://github.com/t3-oss/create-t3-turbo/commit/%H)) by %an" $MERGE_BASE..upstream/main)
+            COMMITS=$(git log --pretty=format:"- %s ([%h](https://github.com/t3-oss/create-t3-turbo/commit/%H)) by %an" "$MERGE_BASE"..upstream/main)
 
             # Store commits in output (handle multiline)
-            echo "new_commits<<EOF" >> $GITHUB_OUTPUT
-            echo "$COMMITS" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            {
+              echo "new_commits<<EOF"
+              echo "$COMMITS"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Create sync branch and merge upstream
+      - name: Merge upstream changes
         if: steps.check.outputs.already_synced == 'false'
         id: merge
         run: |
-          # Create a new branch for the sync
-          BRANCH_NAME="sync-upstream-$(date +%Y%m%d-%H%M%S)"
-          git checkout -b "$BRANCH_NAME"
-          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_ENV"
-
-          # Attempt to merge upstream changes
+          # Attempt to merge upstream changes into main
           if git merge upstream/main --no-edit --allow-unrelated-histories; then
             echo "Merge successful"
             echo "merge_status=success" >> "$GITHUB_OUTPUT"
-            # Push the branch
-            git push origin "$BRANCH_NAME"
           else
             echo "Merge conflict detected"
             echo "merge_status=conflict" >> "$GITHUB_OUTPUT"
@@ -158,187 +153,85 @@ jobs:
           # Complete the merge commit
           git commit --no-edit
 
-          # Push the branch
-          git push origin "${{ env.branch_name }}"
-
           echo "resolution_status=success" >> "$GITHUB_OUTPUT"
           echo "Lockfile conflict auto-resolved successfully"
 
-      - name: Create Pull Request
+      - name: Setup for CI checks
         if: steps.check.outputs.already_synced == 'false' && (steps.merge.outputs.merge_status == 'success' || (steps.analyze.outputs.only_lockfile == 'true' && steps.auto_resolve.outputs.resolution_status == 'success'))
+        uses: ./tooling/github/setup
+
+      - name: Copy env
+        if: steps.check.outputs.already_synced == 'false' && (steps.merge.outputs.merge_status == 'success' || (steps.analyze.outputs.only_lockfile == 'true' && steps.auto_resolve.outputs.resolution_status == 'success'))
+        shell: bash
+        run: cp .env.example .env
+
+      - name: Run CI - Lint
+        if: steps.check.outputs.already_synced == 'false' && (steps.merge.outputs.merge_status == 'success' || (steps.analyze.outputs.only_lockfile == 'true' && steps.auto_resolve.outputs.resolution_status == 'success'))
+        id: lint
+        run: pnpm lint && pnpm lint:ws
+
+      - name: Run CI - Format
+        if: steps.check.outputs.already_synced == 'false' && (steps.merge.outputs.merge_status == 'success' || (steps.analyze.outputs.only_lockfile == 'true' && steps.auto_resolve.outputs.resolution_status == 'success'))
+        id: format
+        run: pnpm format
+
+      - name: Run CI - Typecheck
+        if: steps.check.outputs.already_synced == 'false' && (steps.merge.outputs.merge_status == 'success' || (steps.analyze.outputs.only_lockfile == 'true' && steps.auto_resolve.outputs.resolution_status == 'success'))
+        id: typecheck
+        run: pnpm typecheck
+
+      - name: Run CI - Test
+        if: steps.check.outputs.already_synced == 'false' && (steps.merge.outputs.merge_status == 'success' || (steps.analyze.outputs.only_lockfile == 'true' && steps.auto_resolve.outputs.resolution_status == 'success'))
+        id: test
+        run: pnpm test
+
+      - name: Push to main
+        if: steps.check.outputs.already_synced == 'false' && (steps.merge.outputs.merge_status == 'success' || (steps.analyze.outputs.only_lockfile == 'true' && steps.auto_resolve.outputs.resolution_status == 'success'))
+        run: |
+          git push origin main
+          echo "✅ Successfully synced and pushed to main"
+          echo "📝 Commits merged:"
+          echo "${{ steps.check.outputs.new_commits }}"
+
+      - name: Create Issue for CI Failure
+        if: failure() && steps.check.outputs.already_synced == 'false' && (steps.merge.outputs.merge_status == 'success' || (steps.analyze.outputs.only_lockfile == 'true' && steps.auto_resolve.outputs.resolution_status == 'success'))
         uses: actions/github-script@v7
-        env:
-          # Pass GITHUB_TOKEN separately for auto-approval (different identity from PR creator)
-          APPROVAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # Use SYNC_TOKEN if available (PAT with admin rights to bypass protections)
-          # Otherwise fall back to GITHUB_TOKEN (respects branch protections)
-          github-token: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const branchName = process.env.branch_name;
+            const newCommits = `${{ steps.check.outputs.new_commits }}`;
 
-            const newCommits = process.env['new_commits'] || '';
+            const body = `## ❌ Upstream Sync Failed - CI Checks Failed
 
-            // Check if lockfile was auto-resolved
-            const autoResolved = '${{ steps.analyze.outputs.only_lockfile }}' === 'true' && '${{ steps.auto_resolve.outputs.resolution_status }}' === 'success';
+Attempted to sync changes from upstream but CI checks failed.
 
-            // Build the PR body with new commits
-            let prBody = 'This PR syncs changes from the upstream repository [t3-oss/create-t3-turbo](https://github.com/t3-oss/create-t3-turbo).\n\n';
+### New Commits from Upstream
+${newCommits}
 
-            if (newCommits && newCommits.trim()) {
-              prBody += '## New Commits from Upstream\n\n';
-              prBody += newCommits + '\n\n';
-            }
+### What Happened
+The merge was successful but one or more CI checks failed:
+- Lint: ${{ steps.lint.outcome || 'N/A' }}
+- Format: ${{ steps.format.outcome || 'N/A' }}
+- Typecheck: ${{ steps.typecheck.outcome || 'N/A' }}
+- Test: ${{ steps.test.outcome || 'N/A' }}
 
-            // Add auto-resolution notice if applicable
-            if (autoResolved) {
-              prBody += '## ⚠️ Auto-Resolution Notice\n\nThe pnpm-lock.yaml file had merge conflicts and was automatically resolved by accepting upstream\'s lockfile and running `pnpm install`.\nPlease verify the lockfile changes are correct before merging.\n\n';
-            }
+### What to Do
+1. Check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details
+2. Fix the failing checks locally
+3. Push your fixes to main
+4. Close this issue once resolved
 
-            prBody += '## Auto-Merge Enabled ✨\n\n';
-            prBody += 'This PR has **auto-merge** enabled and will be automatically merged once all required CI checks pass.\n\n';
-            prBody += '**Note:** This workflow uses a PAT with admin privileges to bypass review requirements.\n\n';
-            prBody += '## Review Notes\n';
-            prBody += '- Auto-merge will wait for all required status checks to complete\n';
-            prBody += '- Review requirements are bypassed via admin token\n';
-            prBody += '- If you need to review changes manually, you can disable auto-merge on this PR\n';
-            prBody += '- Check for any conflicts with custom modifications in this fork\n\n';
-            prBody += '---\n';
-            prBody += '🤖 This PR was automatically created by the sync-upstream workflow.';
+### Workflow
+- Triggered by: @${{ github.actor }}
+- Workflow run: ${{ github.run_id }}`;
 
-            try {
-              const { data: pr } = await github.rest.pulls.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: 'Sync with upstream t3-oss/create-t3-turbo',
-                head: branchName,
-                base: 'main',
-                body: prBody,
-              });
-
-              console.log(`Pull request created: ${pr.html_url}`);
-
-              // Auto-approve the PR using GITHUB_TOKEN (different identity from PR creator)
-              // This satisfies the "required reviews" branch protection rule
-              const hasSyncToken = '${{ secrets.SYNC_TOKEN }}' !== '';
-              if (hasSyncToken && process.env.APPROVAL_TOKEN) {
-                try {
-                  // Use fetch API directly with GITHUB_TOKEN for approval
-                  const response = await fetch(
-                    `https://api.github.com/repos/${context.repo.owner}/${context.repo.repo}/pulls/${pr.number}/reviews`,
-                    {
-                      method: 'POST',
-                      headers: {
-                        'Authorization': `Bearer ${process.env.APPROVAL_TOKEN}`,
-                        'Accept': 'application/vnd.github+json',
-                        'X-GitHub-Api-Version': '2022-11-28'
-                      },
-                      body: JSON.stringify({
-                        event: 'APPROVE',
-                        body: '🤖 Auto-approved by sync workflow (CI checks still required)'
-                      })
-                    }
-                  );
-
-                  if (response.ok) {
-                    console.log(`PR #${pr.number} auto-approved using GITHUB_TOKEN`);
-                  } else {
-                    const errorData = await response.text();
-                    console.log('Auto-approval failed:', response.status, errorData);
-                    console.log('The PR may still require manual approval.');
-                  }
-                } catch (approvalError) {
-                  console.log('Auto-approval failed:', approvalError.message);
-                  console.log('The PR may still require manual approval.');
-                }
-              }
-
-              // Enable auto-merge for the PR
-              try {
-                await github.rest.pulls.updateBranch({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: pr.number,
-                });
-                console.log('Updated branch with base branch');
-              } catch (updateError) {
-                console.log('Branch update not needed or failed:', updateError.message);
-              }
-
-              // Wait for status checks to be queued before enabling auto-merge
-              // GitHub needs a moment to trigger CI checks after PR creation
-              console.log('Waiting for status checks to be queued...');
-              let prReady = false;
-              let attempts = 0;
-              const maxAttempts = 10;
-
-              while (!prReady && attempts < maxAttempts) {
-                attempts++;
-                await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
-
-                const { data: prData } = await github.rest.pulls.get({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: pr.number,
-                });
-
-                // Check if PR has status checks or is mergeable
-                if (prData.mergeable_state !== 'unknown') {
-                  prReady = true;
-                  console.log(`PR is ready (mergeable_state: ${prData.mergeable_state})`);
-                } else {
-                  console.log(`Attempt ${attempts}/${maxAttempts}: PR still initializing...`);
-                }
-              }
-
-              // Enable auto-merge using GraphQL API
-              try {
-                const prNodeId = pr.node_id;
-
-                // Check if we're using SYNC_TOKEN (admin token that can bypass protections)
-                const hasAdminToken = '${{ secrets.SYNC_TOKEN }}' !== '';
-
-                const mutation = `
-                  mutation EnableAutoMerge($pullRequestId: ID!) {
-                    enablePullRequestAutoMerge(input: {
-                      pullRequestId: $pullRequestId,
-                      mergeMethod: SQUASH
-                    }) {
-                      pullRequest {
-                        autoMergeRequest {
-                          enabledAt
-                        }
-                      }
-                    }
-                  }
-                `;
-
-                await github.graphql(mutation, {
-                  pullRequestId: prNodeId,
-                });
-
-                console.log(`Auto-merge enabled for PR #${pr.number}`);
-
-                if (hasAdminToken) {
-                  console.log('✓ Using SYNC_TOKEN with admin privileges - will bypass review requirements');
-                  console.log('✓ The PR will be automatically merged once CI checks pass');
-                } else {
-                  console.log('⚠ Using GITHUB_TOKEN - will wait for required reviews and checks');
-                  console.log('⚠ To bypass review requirements, set up a SYNC_TOKEN secret with admin privileges');
-                  console.log('  See README.md for setup instructions');
-                }
-              } catch (autoMergeError) {
-                console.error('Failed to enable auto-merge:', autoMergeError.message);
-                console.log('The PR was created but auto-merge could not be enabled.');
-                console.log('You may need to enable it manually or check repository settings.');
-              }
-            } catch (error) {
-              if (error.status === 422) {
-                console.log('Pull request already exists or no changes to sync');
-              } else {
-                throw error;
-              }
-            }
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '❌ Upstream Sync Failed - CI Checks Failed',
+              body: body,
+              labels: ['upstream-sync', 'ci-failure']
+            });
 
       - name: Create Issue for Merge Conflict
         if: steps.check.outputs.already_synced == 'false' && steps.merge.outputs.merge_status == 'conflict' && steps.analyze.outputs.only_lockfile == 'false'
@@ -346,54 +239,42 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const branchName = process.env.branch_name;
             const conflictedFiles = `${{ steps.analyze.outputs.conflicted_files }}`;
+            const newCommits = `${{ steps.check.outputs.new_commits }}`;
 
-            const issueBody = `## 🔄 Upstream Sync Failed - Merge Conflict
+            const body = `## ⚠️ Upstream Sync Failed - Manual Resolution Required
 
-            The automated sync from [t3-oss/create-t3-turbo](https://github.com/t3-oss/create-t3-turbo) failed due to merge conflicts.
+Attempted to sync changes from upstream [t3-oss/create-t3-turbo](https://github.com/t3-oss/create-t3-turbo) but encountered merge conflicts that require manual resolution.
 
-            ### Conflicted Files
-            \`\`\`
-            ${conflictedFiles}
-            \`\`\`
+### Conflicted Files
+\`\`\`
+${conflictedFiles}
+\`\`\`
 
-            ### What to do
-            1. Manually sync the upstream changes:
-               \`\`\`bash
-               git fetch upstream
-               git checkout -b ${branchName}
-               git merge upstream/main
-               \`\`\`
-            2. Resolve the conflicts in the files listed above
-            3. Commit the resolved changes:
-               \`\`\`bash
-               git add .
-               git commit -m "Resolve merge conflicts from upstream sync"
-               \`\`\`
-            4. Push and create a PR:
-               \`\`\`bash
-               git push origin ${branchName}
-               \`\`\`
+### New Commits from Upstream
+${newCommits}
 
-            ### Additional Information
-            - **Workflow Run**: [${context.runId}](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
-            - **Attempted Branch**: \`${branchName}\`
+### What to Do
+1. Manually merge the upstream changes:
+   \`\`\`bash
+   git fetch upstream
+   git merge upstream/main
+   \`\`\`
+2. Resolve the conflicts in the files listed above
+3. Test the changes locally
+4. Commit and push to main
+5. Close this issue
 
-            ---
-            🤖 This issue was automatically created by the sync-upstream workflow.`;
+### Workflow
+- Triggered by: @${{ github.actor }}
+- Workflow run: ${{ github.run_id }}`;
 
-            try {
-              const { data: issue } = await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: `Upstream sync failed: Merge conflict in branch ${branchName}`,
-                body: issueBody,
-                labels: ['upstream-sync', 'merge-conflict']
-              });
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '⚠️ Upstream Sync Failed - Manual Resolution Required',
+              body: body,
+              labels: ['upstream-sync', 'merge-conflict']
+            });
 
-              console.log(`Issue created: ${issue.html_url}`);
-            } catch (error) {
-              console.error('Failed to create issue:', error);
-              throw error;
-            }
+            console.log('Issue created for merge conflicts');
