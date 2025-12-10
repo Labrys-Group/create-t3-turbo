@@ -1,4 +1,5 @@
 import { createMcpHandler } from "@acme/mcp";
+
 import { env } from "~/env";
 
 const handler = createMcpHandler({
@@ -9,6 +10,3 @@ const handler = createMcpHandler({
 });
 
 export { handler as GET, handler as POST, handler as DELETE };
-
-
-
