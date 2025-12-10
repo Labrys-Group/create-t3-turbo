@@ -1,5 +1,9 @@
 # create-t3-turbo
 
+**See [LABRYS-README.md](./LABRYS-README.md) first.**
+
+---
+
 > [!NOTE]
 >
 > create-t3-turbo now includes the option to use Tanstack Start for the web app!
@@ -27,9 +31,36 @@ This repository includes an automated workflow to sync with the upstream [t3-oss
 **[📥 Trigger Sync Upstream Workflow](https://github.com/Labrys-Group/create-t3-turbo/actions/workflows/sync-upstream.yml)**
 
 When triggered, the workflow will:
+
 - Check for new changes from the upstream repository
 - Create a pull request with the changes if any are found
-- Allow you to review and merge the updates at your convenience
+- **Automatically enable auto-merge** on the PR to merge it once CI checks pass
+- The PR will be merged automatically **without requiring manual review**, streamlining the update process
+
+### Setup Required for Auto-Merge
+
+To enable automatic merging that bypasses review requirements:
+
+1. **Create a Personal Access Token (PAT)**:
+   - Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+   - Click "Generate new token (classic)"
+   - Give it a descriptive name like "Upstream Sync Token"
+   - Select the `repo` scope (full control of private repositories)
+   - Set an appropriate expiration date
+   - Generate and copy the token
+
+2. **Add the token as a repository secret**:
+   - Go to your repository Settings → Secrets and variables → Actions
+   - Click "New repository secret"
+   - Name: `SYNC_TOKEN`
+   - Value: Paste your PAT
+   - Click "Add secret"
+
+3. **Ensure proper permissions**:
+   - The GitHub account that created the PAT must have **admin access** to this repository
+   - This allows the token to bypass branch protection rules
+
+Once configured, sync PRs will automatically merge after CI checks pass, without waiting for manual reviews.
 
 ## About
 
