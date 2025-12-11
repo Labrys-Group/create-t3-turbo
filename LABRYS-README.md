@@ -8,7 +8,7 @@ So this file exists to explain how we use this custom template to kick off an in
 
 Before using this template, sync it with t3:
 
-1. [Go to the repo](https://github.com/Labrys-Group/create-t3-turbo/actions/workflows/sync-upstream.yml)
+1. [Go to the workflow](https://github.com/Labrys-Group/create-t3-turbo/actions/workflows/sync-upstream.yml)
 2. Click "Run workflow"
 
 ```sh
