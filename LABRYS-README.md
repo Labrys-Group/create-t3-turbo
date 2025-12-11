@@ -6,24 +6,10 @@ So this file exists to explain how we use this custom template to kick off an in
 
 ## 1. Local setup
 
-Before using this template, sync it with t3:
+Before using this template, sync it with t3 if needed (it should already be up to date):
 
 1. [Go to the workflow](https://github.com/Labrys-Group/create-t3-turbo/actions/workflows/sync-upstream.yml)
 2. Click "Run workflow"
-
-```sh
-# You can still merge the old way with git `pull --no-rebase`
-git config --global pull.rebase
-git config --global branch.autoSetupRebase always
-
-nvm install
-corepack enable pnpm
-pnpm install
-pnpm format:fix # Prettier
-pnpm lint:fix
-pnpm test
-# Fix and commit if necessary
-```
 
 ## 2. Improve our template
 
