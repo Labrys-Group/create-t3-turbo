@@ -17,7 +17,7 @@ Reference the shared command in `.claude/commands/` using file inclusion:
 description: Command description
 ---
 
-{{file:docs/custom-commands/command-name.md}}
+@docs/custom-commands/command-name.md
 ```
 
 ### Cursor
