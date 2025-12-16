@@ -92,11 +92,31 @@ Co-locate page components with routes, keep page-specific components in `_compon
 app/
   home/
     page.tsx                    # Route entry point
-    _components/                # Page-specific components
+    _components/                # Page-specific components only
       home.controller.tsx
-      home.hook.ts
+      home.hook.ts              # Single hook when page isn't complex
+      home.hook.spec.ts         # Spec file co-located with implementation
       home.view.tsx
-      other-component.tsx
+      home.view.spec.tsx
+      home.md                   # Documentation co-located with feature
+      other-component.tsx       # Simple component used only on home page
+      data-table/               # Complex component with sub-views
+        data-table.tsx          # Controller
+        data-table.hook.ts      # Business logic
+        data-table.hook.spec.ts
+        data-table.view.tsx     # Main view
+        data-table.view.spec.tsx
+        data-table.md           # Component-specific documentation
+        table-header.view.tsx   # Sub-view
+        table-row.view.tsx      # Sub-view
+    _hooks/                     # Complex pages: split into multiple hooks
+      use-home-data.ts
+      use-home-data.spec.ts
+      use-home-actions.ts
+      use-home-actions.spec.ts
+    _lib/                       # Page-specific helpers/utilities
+      helpers.ts
+      helpers.spec.ts
   dashboard/
     page.tsx
     _components/
@@ -106,6 +126,11 @@ app/
 ```
 
 **Rules:**
-- `page.tsx` imports from `_components` folder
-- Shared components go in root `components/` directory
-- `_components` prefix keeps them private to Next.js routing
+- `_components/` for page-specific components (**not reusable across pages**)
+- Shared/reusable components go in root `components/` directory
+- `_hooks/` for complex pages requiring multiple hooks
+- `_lib/` for page-specific helpers/utilities
+- Break complex pages into self-contained sections when possible
+- Spec files (`.spec.ts`, `.spec.tsx`) co-located next to implementation files
+- Documentation files (`.md`) co-located with features/components
+- `_` prefix keeps folders private to Next.js routing
