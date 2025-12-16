@@ -12,6 +12,7 @@ feature/
   feature.view.tsx       # Pure presentation
   feature.view.spec.tsx  # View tests
   feature.md             # Documentation (optional)
+
 ```
 
 ### Controller (feature.tsx)
@@ -23,6 +24,7 @@ export const HomeController = () => {
   const props = useHome();
   return <HomeView {...props} />;
 };
+
 ```
 
 ### Hook (feature.hook.ts)
@@ -43,22 +45,23 @@ export const useHome = () => {
 
 // Export inferred type for View
 export type UseHomeProps = ReturnType<typeof useHome>;
+
 ```
 
 ### View (feature.view.tsx)
 
 **Must be deterministic** - same props = same output.
 
-**Why?** Easy testing (mock props → assert output), debuggability (no hidden state), and refactorability (swap hooks without breaking UI).
+**Why?** It makes development easier. Testing (mock props → assert output), debuggability (no hidden state), and refactorability (swap hooks without breaking UI) are all obvious, simple, and easy to achieve when the view and business logic are properly separated.
 
-#### Valid Local State
+### Valid Local State
 
 Local state is allowed for **ephemeral UI concerns only** - things that control how content displays, not what displays.
 
 **✅ Valid:** Modal/dropdown open state, accordion expanded, form inputs (pre-submit), tab index, animations
 **❌ Invalid:** Data fetching (`useQuery`), filtering/sorting, business calculations, auth state
 
-#### Examples
+### Examples
 
 ```tsx
 // ❌ BAD - Business logic in View
@@ -81,11 +84,14 @@ export const ProductListView = ({ products, search, setSearch }: UseProductListP
   const [isFilterOpen, setIsFilterOpen] = useState(false); // ✅ UI state only
   return <div><input value={search} onChange={e => setSearch(e.target.value)} /></div>;
 };
+
 ```
 
 **Rule of thumb:** If it affects **what** data is shown → Hook. If it affects **how** it's shown → View.
 
 **Note:** Trivial formatting (`name.toUpperCase()`, `price.toFixed(2)`) is fine in View. Complex filtering/sorting/calculations with testable business rules must go in Hook for unit testability.
+
+If your view component contains a lot of valid local state, consider moving it to a separate hook and passing it in via the component hook. Including local state in the view component is useful when it is simple, but when it becomes complicated it should be moved out of the component for readability. 
 
 ## Folder Structure (Next.js)
 
@@ -112,9 +118,11 @@ app/
       use-home-actions.ts
     _lib/                       # Page-specific helpers
       helpers.ts
+
 ```
 
 **Rules:**
+
 - `_components/` for page-specific components (**not reusable across pages**)
 - Shared/reusable components go in root `components/` directory
 - `_hooks/` for complex pages requiring multiple hooks
@@ -150,9 +158,11 @@ src/
   components/                   # Shared/reusable components
   hooks/                        # Shared hooks
   lib/                          # Shared utilities
+
 ```
 
 **Rules:**
+
 - `features/` for self-contained feature modules
 - `components/` subdirectory for feature-specific components
 - Shared components/hooks/utils at root level

@@ -24,7 +24,3 @@ Follow these standards when working in this codebase:
 
 @docs/standards/react.md
 
-@docs/standards/naming.md
-
-@docs/standards/git.md
-
