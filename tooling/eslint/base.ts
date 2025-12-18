@@ -1,6 +1,7 @@
 import * as path from "node:path";
 import { includeIgnoreFile } from "@eslint/compat";
 import eslint from "@eslint/js";
+import filenamesPlugin from "eslint-plugin-filenames-simple";
 import importPlugin from "eslint-plugin-import";
 import turboPlugin from "eslint-plugin-turbo";
 import { defineConfig } from "eslint/config";
@@ -74,6 +75,13 @@ export const baseConfig = defineConfig(
       ],
       "@typescript-eslint/no-non-null-assertion": "error",
       "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+      "filenames/naming-convention": [
+        "warn",
+        {
+          rule: "kebab-case",
+        },
+      ],
+      "no-warning-comments": "warn",
     },
   },
   {
