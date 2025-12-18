@@ -77,9 +77,10 @@ export const baseConfig = defineConfig(
       "@typescript-eslint/no-non-null-assertion": "error",
       "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
       "filenames/naming-convention": [
-        "warn",
+        "error",
         {
           rule: "kebab-case",
+          excepts: ["^[^a-zA-Z].*"], // allow filenames not starting with a letter (eg. _layout.tsx)
         },
       ],
       "no-warning-comments": "warn",
