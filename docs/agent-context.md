@@ -22,7 +22,5 @@ This is a T3 Turbo monorepo template - a Turborepo-based full-stack TypeScript p
 
 Follow these standards when working in this codebase:
 
-@docs/standards/naming.md
-
-@docs/standards/git.md
+@docs/standards/react.md
 
