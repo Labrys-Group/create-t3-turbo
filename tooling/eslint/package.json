@@ -16,6 +16,7 @@
     "@eslint/compat": "^1.4.0",
     "@eslint/js": "catalog:",
     "@next/eslint-plugin-next": "^16.0.0",
+    "eslint-plugin-filenames-simple": "^0.9.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
