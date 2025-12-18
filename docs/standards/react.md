@@ -5,13 +5,13 @@
 Every feature follows a controller-view-hook pattern:
 
 ```
-feature/
+src/feature/
   feature.tsx            # Orchestration
   feature.hook.ts        # Business logic & state
   feature.hook.spec.ts   # Hook tests
   feature.view.tsx       # Pure presentation
   feature.view.spec.tsx  # View tests
-  feature.md             # Documentation (optional)
+  feature.md             # Documentation (optional), yes, lowercase file name
 
 ```
 
@@ -50,7 +50,7 @@ export type UseHomeProps = ReturnType<typeof useHome>;
 
 ### View (feature.view.tsx)
 
-**Must be deterministic** - same props = same output.
+**Pure components only** - no state, no context, same props, same output.
 
 **Why?** It makes development easier. Testing (mock props → assert output), debuggability (no hidden state), and refactorability (swap hooks without breaking UI) are all obvious, simple, and easy to achieve when the view and business logic are properly separated.
 
@@ -89,7 +89,7 @@ export const ProductListView = ({ products, search, setSearch }: UseProductListP
 
 **Rule of thumb:** If it affects **what** data is shown → Hook. If it affects **how** it's shown → View.
 
-**Note:** Trivial formatting (`name.toUpperCase()`, `price.toFixed(2)`) is fine in View. Complex filtering/sorting/calculations with testable business rules must go in Hook for unit testability.
+**Note:** Trivial formatting (`name.toUpperCase()`) is fine in View. Complex filtering/sorting/calculations with testable business rules must go in Hook for unit testability.
 
 If your view component contains a lot of valid local state, consider moving it to a separate hook and passing it in via the component hook. Including local state in the view component is useful when it is simple, but when it becomes complicated it should be moved out of the component for readability. 
 
@@ -108,10 +108,10 @@ app/
       home.view.tsx
       home.md                   # Docs co-located
       other-component.tsx       # Simple specific to the home page
-      data-table/               # Complex component gets subdirectory
-        data-table.tsx
-        data-table.hook.ts
-        data-table.view.tsx
+      home-table/               # Complex component gets subdirectory
+        home-table.tsx
+        home-table.hook.ts
+        home-table.view.tsx
         table-row.view.tsx      # Sub-views
     _hooks/                     # Multiple hooks for complex pages
       use-home-data.ts
@@ -146,10 +146,10 @@ src/
       home.view.tsx
       home.md
       components/               # Feature-specific components
-        data-table/
-          data-table.tsx
-          data-table.hook.ts
-          data-table.view.tsx
+        home-table/
+          home-table.tsx
+          home-table.hook.ts
+          home-table.view.tsx
       hooks/                    # Multiple hooks for complex features
         use-home-data.ts
         use-home-actions.ts
