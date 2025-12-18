@@ -4,50 +4,49 @@ MCP (Model Context Protocol) handler package for the Next.js application.
 
 ## Overview
 
-This package provides an MCP server implementation that enables AI assistants (Claude Desktop, Cursor, etc) to interact with the application's post management system via the MCP protocol.
+This package provides an MCP server implementation that enables AI assistants (Claude Desktop, Cursor, etc) to perform arithmetic operations via the MCP protocol.
 
 ## Features
 
-- **Post Management Tools**: Four MCP tools for managing posts:
-  - `list_posts` - Retrieve posts with optional limit
-  - `get_post` - Get a post by ID
-  - `create_post` - Create a new post
-  - `delete_post` - Delete a post by ID
+- **MCP streaming endpoint**: MCP server using `mcp-handler` to stream responses via Server-Sent Events (SSE)
 
-- **Serverless-Compatible**: Designed to work seamlessly in serverless environments like Vercel
+- **Arithmetic Tools**: Four example MCP tools for performing basic arithmetic operations:
+  - `add`, `subtract`, `multiply`, `divide`
 
 - **SSE Resumability**: Optional Redis support for resumable Server-Sent Events (SSE) streams
 
 ## SSE Resumability with Redis
 
-In serverless environments, each function invocation is stateless and short-lived. When MCP streams responses via Server-Sent Events (SSE), Redis can be used to store stream state (last sent message position).
-
-**Why Redis is useful:**
-
 - If a serverless function times out or the connection drops mid-stream, Redis stores the last position
 - A new function invocation can read from Redis and resume the stream from where it left off
 - Without Redis, streams still work but cannot resume after interruptions - they must restart from the beginning
 
-**When to use Redis:**
-
-- **Production**: Highly recommended for reliability with long-running operations
-- **Development**: Optional - often not needed for local testing
-- **Short operations**: May not be necessary for quick tool executions
-
 To enable Redis, set the `REDIS_URL` environment variable. The handler will automatically use it if provided.
 
-## Usage
+## Integrating with AI Assistants
 
-```typescript
-import { createMcpHandler } from "@acme/mcp";
+To use this MCP server with AI assistants like Claude Desktop or Cursor, configure it using the appropriate settings file.
+Cursor: ~/.cursor/mcp.json
+Claude Desktop: ~/Library/Application Support/Claude/claude_desktop_config.json
 
-const handler = createMcpHandler({
-  redisUrl: process.env.REDIS_URL, // Optional: enables SSE resumability
-  basePath: "/api",
-  maxDuration: 60,
-  verboseLogs: process.env.NODE_ENV === "development",
-});
+### Configuration
+
+Update your `mcp.json` file to include your service name and URL. You can also pass environment variables to the MCP server.
+
+```json
+{
+  "mcpServers": {
+    "acme-service": {
+      "url": "http://localhost:3000/api/mcp",
+      "env": {
+        "REDIS_URL": "${REDIS_URL}" //Optional: enables SSE resumability
+      }
+    }
+  }
+}
 ```
+
+You might need to restart your AI assistant to load the new MCP server configuration.
 
 ## Dependencies
 

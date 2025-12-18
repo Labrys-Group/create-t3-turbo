@@ -171,8 +171,7 @@ export function createMcpHandler(config?: {
       // Optional server options
     },
     {
-      // Redis URL for SSE resumability: stores stream state so streams can resume
-      // after serverless function timeouts or connection drops
+      // Redis URL for SSE resumability
       redisUrl: config?.redisUrl ?? process.env.REDIS_URL,
       basePath: config?.basePath ?? "/api",
       maxDuration: config?.maxDuration ?? 60,
