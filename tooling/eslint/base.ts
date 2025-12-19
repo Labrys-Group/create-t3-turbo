@@ -76,7 +76,7 @@ export const baseConfig = defineConfig(
       ],
       "@typescript-eslint/no-non-null-assertion": "error",
       "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
-      "complexity": "error",
+      complexity: "error",
       "filenames/naming-convention": [
         "error",
         {
