@@ -21,7 +21,7 @@ This package provides an MCP server implementation that enables AI assistants (C
 - A new function invocation can read from Redis and resume the stream from where it left off
 - Without Redis, streams still work but cannot resume after interruptions - they must restart from the beginning
 
-To enable Redis, set the `REDIS_URL` environment variable. The handler will automatically use it if provided.
+To enable Redis, set the `REDIS_URL` environment variable. The handler will automatically use it if provided. For local development, running Redis in a docker container is an easy path forward if you already have the docker toolchain setup.
 
 ## Integrating with AI Assistants
 
