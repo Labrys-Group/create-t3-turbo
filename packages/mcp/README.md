@@ -37,12 +37,9 @@ Update your `mcp.json` file to include your service name and URL. You can also p
 {
   "mcpServers": {
     "acme-service": {
-      "url": "http://localhost:3000/api/mcp",
+      "url": "http://localhost:3000/api/mcp", // Can change to deployed URL
       "env": {
         "REDIS_URL": "${REDIS_URL}" //Optional: enables SSE resumability
-      }
-    }
-  }
 }
 ```
 
