@@ -1,6 +1,7 @@
 import * as path from "node:path";
 import { includeIgnoreFile } from "@eslint/compat";
 import eslint from "@eslint/js";
+import filenamesPlugin from "eslint-plugin-filenames-simple";
 import importPlugin from "eslint-plugin-import";
 import turboPlugin from "eslint-plugin-turbo";
 import { defineConfig } from "eslint/config";
@@ -45,6 +46,7 @@ export const baseConfig = defineConfig(
     plugins: {
       import: importPlugin,
       turbo: turboPlugin,
+      filenames: filenamesPlugin,
     },
     extends: [
       eslint.configs.recommended,
@@ -74,7 +76,15 @@ export const baseConfig = defineConfig(
       ],
       "@typescript-eslint/no-non-null-assertion": "error",
       "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
-      "complexity": "error"
+      "complexity": "error",
+      "filenames/naming-convention": [
+        "error",
+        {
+          rule: "kebab-case",
+          excepts: ["^[^a-zA-Z].*"], // allow filenames not starting with a letter (eg. _layout.tsx)
+        },
+      ],
+      "no-warning-comments": "warn",
     },
   },
   {
