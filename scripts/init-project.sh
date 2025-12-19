@@ -19,9 +19,13 @@ rm LICENSE
 rm README.md
 rm LABRYS-README.md
 mv PROJECT-README.md README.md
+
+# Make a freshly minted env file
+cp .env.example .env
+
 rm scripts/init-project.sh # What a selfless hero!
 
 git add --all
-git commit "chore: ./scripts/init-project.sh"
+git commit -m "chore: ./scripts/init-project.sh"
 
 echo "Now make README.md relevant to your project!"
