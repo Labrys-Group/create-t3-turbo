@@ -19,6 +19,6 @@
 pnpm install
 pnpm format:fix # Prettier
 pnpm lint:fix
-pnpm test
+pnpm test # Keep running
 pnpm run dev
 ```

@@ -15,6 +15,10 @@ Before using this template, sync it with t3 if needed (it should already be up t
 
 Complete at least one task from the [project](https://github.com/Labrys-Group/create-t3-turbo/projects?query=is%3Aopen).
 
+### 2.1 Template development
+
+As far as I understand, create-turbo only works by using the main branch of a GitHub repo (see npx command below). To test your changes to the template, I have made my own fork of _this Labrys_ repo and I'm pushing changes to main, so that I can call the npx command below with my repo and make tests without pushing to `Labrys-Group/create-t3-turbo`.
+
 ## 3. Use the template
 
 ```sh
