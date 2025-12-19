@@ -3,6 +3,7 @@
 - https://labrys.atlassian.net/browse/XXX-NNNN
 - Outline what the PR is addressing in a brief sentence form
 - Explain how it relates to the Jira card, if it completes it or what is left to complete it
+- UI work _must_ have pictures or tiny gifs to show the flow
 
 ## Approach
 
@@ -27,10 +28,6 @@ All these are optional depending on the size and context of the work being done.
 - Important decisions with ramifications on future work
 - Tradeoffs
 - Heads up for new reusable components
-
-## Breaking Changes
-
-<!-- List any breaking changes or write "None" -->
 
 ---
 
