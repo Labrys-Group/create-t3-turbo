@@ -17,6 +17,8 @@ Complete at least one task from the [project](https://github.com/Labrys-Group/cr
 
 ## 3. Use the template
 
+To use the latest version of the template, and have it prompt you for the project name:
+
 ```sh
 # In your project folder
 npx create-turbo@latest -e https://github.com/Labrys-Group/create-t3-turbo
@@ -24,3 +26,11 @@ npx create-turbo@latest -e https://github.com/Labrys-Group/create-t3-turbo
 cd $your_project
 ./scripts/init-project.sh
 ```
+
+To use a branch of the template (eg: `example-branch`), and have it create a folder (eg: `example-folder-name`):
+
+```bash
+ npx create-turbo@latest example-folder-name -e https://github.com/Labrys-Group/create-t3-turbo/tree/example-branch
+```
+
+TIP: If your branch has special characters you may need to escape them, eg: `feat/my-feature` -> `feat%2Fmy-feature`
