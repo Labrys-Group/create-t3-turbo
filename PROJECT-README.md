@@ -22,3 +22,14 @@ pnpm lint:fix
 pnpm test
 pnpm run dev
 ```
+
+## Install Shadcn items from the repository
+
+From `apps/nextjs`:
+
+```sh
+npx shadcn@latest add \
+  https://raw.githubusercontent.com/Labrys-Group/common-registry/main/registry.json\#time
+```
+
+Please consider contributing to our [common registry](https://github.com/Labrys-Group/common-registry/blob/main/CONTRIBUTING.md) as much as possible.
