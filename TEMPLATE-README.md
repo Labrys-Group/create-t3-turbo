@@ -34,3 +34,9 @@ To use a branch of the template (eg: `example-branch`), and have it create a fol
 ```
 
 TIP: If your branch has special characters you may need to escape them, eg: `feat/my-feature` -> `feat%2Fmy-feature`
+
+## READMEs
+
+1. README - T3 original that we don't want to edit
+2. TEMPLATE-README - edits for the T3 template in a separate file to avoid conflicts
+3. PROJECT-README - template for the final client project readme, renamed README in `init-project.sh`

@@ -1,6 +1,6 @@
 # create-t3-turbo
 
-**See [LABRYS-README.md](./LABRYS-README.md) first.**
+**See [TEMPLATE-README.md](./TEMPLATE-README.md) first.**
 
 ---
 
