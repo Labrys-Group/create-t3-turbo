@@ -8,7 +8,7 @@ fi
 
 # Prep the readme for _this_ project
 rm README.md
-rm LABRYS-README.md
+rm TEMPLATE-README.md
 mv PROJECT-README.md README.md
 
 # Make a freshly minted env file
