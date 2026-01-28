@@ -30,9 +30,7 @@ test.describe("example contact form", () => {
     await expect(page.getByText("Invalid email address")).toBeVisible();
   });
 
-  test("shows message validation error for short message", async ({
-    page,
-  }) => {
+  test("shows message validation error for short message", async ({ page }) => {
     await page.getByLabel("Name").fill("Jane Doe");
     await page.getByLabel("Email").fill("jane@example.com");
     await page.getByLabel("Message").fill("short");
@@ -49,12 +47,8 @@ test.describe("example contact form", () => {
     await page.getByLabel("Message").fill("This is a valid test message");
     await page.getByRole("button", { name: "Submit" }).click();
 
-    await expect(
-      page.getByText("Thanks for your message!"),
-    ).toBeVisible();
-    await expect(
-      page.getByText("We'll get back to you soon."),
-    ).toBeVisible();
+    await expect(page.getByText("Thanks for your message!")).toBeVisible();
+    await expect(page.getByText("We'll get back to you soon.")).toBeVisible();
   });
 
   test("resets form after clicking send another", async ({ page }) => {
