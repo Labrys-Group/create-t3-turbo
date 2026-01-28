@@ -45,7 +45,8 @@ export default defineConfig({
 ```
 
 Key decisions:
-- **`testMatch: "**/*.e2e.ts"`** — uses `.e2e.ts` suffix so vitest doesn't pick up e2e tests
+
+- **`testMatch: "**/\*.e2e.ts"`** — uses `.e2e.ts` suffix so vitest doesn't pick up e2e tests
 - **`testDir: "./src"`** — tests are co-located with source files, not in a separate directory
 - **Port 3939** — avoids conflicts with other local dev servers on 3000
 - **`webServer`** — Playwright starts the dev server automatically and waits for it
@@ -150,6 +151,7 @@ await expect(page.getByText("Error")).not.toBeVisible();
 Prefer `getByRole`, `getByLabel`, and `getByText` over `data-testid` attributes.
 
 **Why:**
+
 - **Tests reflect real user experience.** Accessible locators find elements the way a user would — by visible text, labels, and roles. If a button's text changes from "Submit" to "Send", the test fails, which is correct — it caught a UX change.
 - **Test IDs hide broken UI.** A test using `data-testid="submit-btn"` passes even if the button text is deleted or becomes nonsensical. The test gives false confidence.
 - **Accessible locators double as accessibility audits.** If you can't locate an element by role or label, that's a signal the markup needs better accessibility attributes.
