@@ -73,7 +73,6 @@ export function ContactFormView({
               <Input
                 id={field.name}
                 name={field.name}
-                type="email"
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
