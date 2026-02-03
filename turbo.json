@@ -29,6 +29,10 @@
     "test": {
       "dependsOn": ["^topo", "^build"]
     },
+    "test:e2e": {
+      "dependsOn": ["^topo", "^build"],
+      "cache": false
+    },
     "clean": {
       "cache": false
     },
