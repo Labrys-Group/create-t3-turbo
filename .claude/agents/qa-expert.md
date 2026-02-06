@@ -91,6 +91,7 @@ describe("post router", () => {
     expect(posts).toHaveLength(1);
   });
 
+  // Recommended additional test patterns (not yet in the current test suite):
   it("rejects unauthenticated create", async () => {
     const caller = makeTestCaller(); // No session
     await expect(
@@ -269,5 +270,6 @@ pnpm typecheck             # TypeScript check
 - **frontend-developer** — Component/hook testing, accessibility testing
 - **nextjs-expert** — E2E test patterns, page testing
 - **fullstack-developer** — End-to-end test strategy
+- **typescript-pro** — Type safety verification, strict mode compliance
 - **code-reviewer** — Test coverage review during code review
 - **debugger** — Test failures, flaky tests

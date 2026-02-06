@@ -111,11 +111,15 @@ const { data: posts } = useSuspenseQuery(trpc.post.all.queryOptions());
 
 ```typescript
 // packages/api/src/index.ts
-import type { AppRouter } from "./root";
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
+import type { AppRouter } from "./root";
 
-export type RouterInputs = inferRouterInputs<AppRouter>;
-export type RouterOutputs = inferRouterOutputs<AppRouter>;
+type RouterInputs = inferRouterInputs<AppRouter>;
+type RouterOutputs = inferRouterOutputs<AppRouter>;
+
+export { type AppRouter, appRouter } from "./root";
+export { createTRPCContext } from "./trpc";
+export type { RouterInputs, RouterOutputs };
 
 // Usage in components
 import type { RouterOutputs } from "@acme/api";
@@ -312,9 +316,10 @@ function handleStatus(status: "active" | "archived" | "draft") {
 export * from "drizzle-orm/sql";
 export { alias } from "drizzle-orm/pg-core";
 
-// packages/api/src/index.ts
-export type { AppRouter } from "./root";
-export type { RouterInputs, RouterOutputs } from "./root";
+// packages/api/src/index.ts — defines RouterInputs/RouterOutputs locally
+export { type AppRouter, appRouter } from "./root";
+export { createTRPCContext } from "./trpc";
+export type { RouterInputs, RouterOutputs };
 ```
 
 ### Cross-Package Type Usage
@@ -368,4 +373,5 @@ pnpm lint                  # ESLint (catches type-related issues)
 - **nextjs-expert** — App Router typing, async API patterns
 - **fullstack-developer** — End-to-end type safety across all layers
 - **debugger** — Type errors and inference issues
+- **qa-expert** — Type coverage metrics, test type safety
 - **code-reviewer** — Type safety review during code review

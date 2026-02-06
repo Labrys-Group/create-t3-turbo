@@ -75,6 +75,7 @@ export default function HomePage() {
 }
 ```
 
+- `trpc` is a `createTRPCOptionsProxy<AppRouter>` from `@trpc/tanstack-react-query` (see `~/trpc/server.tsx`)
 - `prefetch()` starts the query on the server
 - `HydrateClient` dehydrates the QueryClient and wraps children in `HydrationBoundary`
 - Client components pick up the prefetched data via `useSuspenseQuery`

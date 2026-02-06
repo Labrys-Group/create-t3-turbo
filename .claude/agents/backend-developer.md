@@ -262,29 +262,40 @@ pnpm db:studio   # Open Drizzle Studio (visual editor)
 ### Auth Setup (`packages/auth/src/index.ts`)
 
 ```typescript
+import type { BetterAuthPlugin } from "better-auth";
+import { expo } from "@better-auth/expo";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { expo } from "@better-auth/expo";
+import { oAuthProxy } from "better-auth/plugins";
 import { db } from "@acme/db/client";
 
-export function initAuth(options: {
+export function initAuth<
+  TExtraPlugins extends BetterAuthPlugin[] = [],
+>(options: {
   baseUrl: string;
   productionUrl: string;
   secret: string | undefined;
   discordClientId: string;
   discordClientSecret: string;
+  extraPlugins?: TExtraPlugins;
 }) {
   return betterAuth({
     database: drizzleAdapter(db, { provider: "pg" }),
     baseURL: options.baseUrl,
     secret: options.secret,
-    plugins: [expo()],
+    plugins: [
+      oAuthProxy({ productionURL: options.productionUrl }),
+      expo(),
+      ...(options.extraPlugins ?? []),
+    ],
     socialProviders: {
       discord: {
         clientId: options.discordClientId,
         clientSecret: options.discordClientSecret,
+        redirectURI: `${options.productionUrl}/api/auth/callback/discord`,
       },
     },
+    trustedOrigins: ["expo://"],
   });
 }
 

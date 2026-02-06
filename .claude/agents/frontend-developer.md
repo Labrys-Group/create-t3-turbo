@@ -160,7 +160,7 @@ export function Button({
 Key patterns:
 - **Props**: Extend `React.ComponentProps<"element">` intersected with `VariantProps<typeof variants>` — no `forwardRef` needed (React 19)
 - **`data-slot` attributes**: All components use `data-slot="component-name"` for CSS targeting
-- **`cn()` utility**: Class merging via `tailwind-merge` + `clsx` — always allow `className` overrides
+- **`cn()` utility**: Class merging via `cx` (from CVA) + `tailwind-merge` — always allow `className` overrides
 - **`"use client"` directive**: Only on components with state, effects, or browser APIs
 - **Radix imports**: Use `radix-ui` package directly (e.g., `import { Slot as SlotPrimitive } from "radix-ui"`)
 
