@@ -56,3 +56,6 @@ dist/
 
 playwright-report
 test-results
+
+# claude code local overrides
+.claude/settings.local.json

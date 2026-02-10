@@ -1,0 +1,3 @@
+[submodule ".claude"]
+	path = .claude
+	url = git@github.com:Labrys-Group/Claude-Config.git
