@@ -34,3 +34,7 @@ To use a branch of the template (eg: `example-branch`), and have it create a fol
 ```
 
 TIP: If your branch has special characters you may need to escape them, eg: `feat/my-feature` -> `feat%2Fmy-feature`
+
+## Claude Code Config
+
+The `.claude/` directory is not checked into the repo. It's automatically cloned from [Claude-Config](https://github.com/Labrys-Group/Claude-Config) during `pnpm install` via the `postinstall` script, and updated to the latest on every subsequent install. No manual steps needed.

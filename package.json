@@ -20,7 +20,7 @@
     "lint": "turbo run lint --continue -- --cache --cache-location .cache/.eslintcache",
     "lint:fix": "turbo run lint --continue -- --fix --cache --cache-location .cache/.eslintcache",
     "lint:ws": "pnpm dlx sherif@latest",
-    "postinstall": "(git submodule update --init -- .claude || echo \"Skipping submodule update\") && pnpm lint:ws",
+    "postinstall": "([ -d .claude/.git ] && git -C .claude pull --ff-only || git clone https://github.com/Labrys-Group/Claude-Config.git .claude) && pnpm lint:ws",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "typecheck": "turbo run typecheck",
