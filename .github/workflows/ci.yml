@@ -23,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - name: Setup
+        uses: ./tooling/github/setup
       - name: PNPM Audit
         uses: JamesRobertWiseman/pnpm-audit@v3.1.0
       
