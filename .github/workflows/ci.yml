@@ -19,6 +19,13 @@ env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
 
 jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: PNPM Audit
+        uses: JamesRobertWiseman/pnpm-audit@v3.1.0
+      
   lint:
     runs-on: ubuntu-latest
     steps:
