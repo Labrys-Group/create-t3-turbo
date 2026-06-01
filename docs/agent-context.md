@@ -24,4 +24,5 @@ Follow these standards when working in this codebase:
 
 @docs/standards/react.md
 @docs/standards/e2e-testing.md
+@docs/standards/smart-contract-testing.md
 
