@@ -18,9 +18,10 @@ on:
   # https://github.com/Labrys-Group/create-t3-turbo/actions/workflows/sync-upstream.yml
   # Click "Run workflow"
   workflow_dispatch: # Allow manual triggering
-  schedule:
-    # Run daily at 2 AM UTC
-    - cron: '0 2 * * *'
+  # Scheduled auto-sync disabled — uncomment to re-enable the daily run
+  # schedule:
+  #   # Run daily at 2 AM UTC
+  #   - cron: '0 2 * * *'
 
 # You can leverage Vercel Remote Caching with Turbo to speed up your builds
 env:
