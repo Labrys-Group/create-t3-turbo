@@ -33,7 +33,7 @@
     "@turbo/gen": "^2.8.17",
     "dotenv-cli": "^10.0.0",
     "prettier": "catalog:",
-    "turbo": "^2.8.17",
+    "turbo": "^2.9.14",
     "typescript": "catalog:"
   },
   "prettier": "@acme/prettier-config"
